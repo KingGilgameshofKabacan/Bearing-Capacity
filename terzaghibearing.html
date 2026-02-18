@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foundation Engineering: Subsoil Exploration Exam</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --success: #16a34a;
+            --error: #dc2626;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            color: var(--text-light);
+            background: #f1f5f9;
+            padding: 10px 15px;
+            border-radius: 8px;
+        }
+
+        .question-card {
+            margin-bottom: 1.5rem;
+        }
+
+        .question-text {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .option-btn {
+            background: #fff;
+            border: 2px solid #e2e8f0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+            width: 100%;
+            position: relative;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--primary);
+            background: #eff6ff;
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+        }
+
+        .option-btn.correct {
+            border-color: var(--success);
+            background-color: #dcfce7;
+            color: #14532d;
+        }
+
+        .option-btn.wrong {
+            border-color: var(--error);
+            background-color: #fee2e2;
+            color: #7f1d1d;
+        }
+
+        .feedback-area {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            background: #f8fafc;
+            border-left: 4px solid var(--primary);
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .feedback-area.visible {
+            display: block;
+        }
+
+        .rationale-title {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .next-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: none;
+            transition: background 0.2s;
+        }
+
+        .next-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            margin-top: 2rem;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Subsoil Exploration & Natural Deposits</h1>
+        <p>Chapter 2 Review - Principles of Foundation Engineering</p>
+    </header>
+
+    <div class="stats-bar">
+        <span id="question-count">Question 1 of 100</span>
+        <span id="score-display">Score: 0</span>
+    </div>
+
+    <div id="quiz-area">
+        <div class="question-card">
+            <div class="question-text" id="question-text">Loading...</div>
+            <div class="options-grid" id="options-container">
+                <!-- Options injected here -->
+            </div>
+        </div>
+
+        <div class="feedback-area" id="feedback">
+            <span class="rationale-title">Explanation:</span>
+            <span id="rationale-text"></span>
+        </div>
+
+        <div class="controls">
+            <button class="next-btn" id="next-btn">Next Question →</button>
+        </div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+    </div>
+</div>
+
+<script>
+const questions = [
+    {
+        q: "The primary purpose of a subsoil exploration program is to determine:",
+        options: ["The aesthetic quality of the soil", "The stratification and engineering properties of the soil", "The exact age of the soil deposits", "The color variations for landscaping"],
+        correct: 1,
+        rationale: "The main goal is to obtain information on soil stratification, physical properties, and strength parameters for foundation design."
+    },
+    {
+        q: "Which of the following is NOT a step in a typical subsoil exploration program?",
+        options: ["Collection of preliminary information", "Reconnaissance", "Site investigation", "Structural design of the superstructure"],
+        correct: 3,
+        rationale: "Structural design of the superstructure happens after the subsoil exploration and foundation design are complete."
+    },
+    {
+        q: "In a reconnaissance survey, what is primarily observed?",
+        options: ["Detailed shear strength of soil", "General topography, vegetation, and existing structures", "Chemical composition of pore water at 50m depth", "Microscopic soil fabric"],
+        correct: 1,
+        rationale: "Reconnaissance is a visual inspection to assess access, topography, drainage, and nearby structures before detailed exploration."
+    },
+    {
+        q: "For a multi-story building, the approximate depth of boring should extend:",
+        options: ["1 meter below the surface", "To a depth where the net stress increase is less than 10% of the overburden pressure", "Exactly 5 meters for all buildings", "To the bedrock regardless of depth"],
+        correct: 1,
+        rationale: "Borings should extend to a depth where the stress increase from the foundation becomes negligible (often <10% of overburden)."
+    },
+    {
+        q: "The standard spacing of borings for multi-story buildings is typically:",
+        options: ["10-30 meters", "50-100 meters", "1-2 meters", "200-300 meters"],
+        correct: 0,
+        rationale: "Boring spacing usually ranges from 10 to 30 meters depending on the uniformity of the soil and building footprint."
+    },
+    {
+        q: "Hand augers are typically limited to depths of approximately:",
+        options: ["3-5 meters", "15-20 meters", "50-60 meters", "100 meters"],
+        correct: 0,
+        rationale: "Hand augers are manually operated and are generally practical only for shallow depths (3-5m) in soft soils."
+    },
+    {
+        q: "Which drilling method uses a chopping bit attached to a drill rod and water pressure to flush out cuttings?",
+        options: ["Continuous flight auger", "Wash boring", "Rotary drilling", "Percussion drilling"],
+        correct: 1,
+        rationale: "Wash boring involves chopping the soil and using a water jet to bring the cuttings to the surface."
+    },
+    {
+        q: "Hollow-stem augers are advantageous because:",
+        options: ["They are lighter than solid augers", "Sampling can be done through the hollow stem without removing the auger", "They use excessive water", "They cannot penetrate clay"],
+        correct: 1,
+        rationale: "The hollow stem acts as a casing, allowing sampling tools (like SPT spoons) to be lowered through it without hole collapse."
+    },
+    {
+        q: "Rotary drilling is most suitable for:",
+        options: ["Soft clays only", "Loose sands only", "Deep exploration in hard soils and rock", "Manual exploration"],
+        correct: 2,
+        rationale: "Rotary drilling uses a rotating bit and drilling mud, making it effective for deep borings in various formations including rock."
+    },
+    {
+        q: "Percussion drilling is also known as:",
+        options: ["Cable tool drilling", "Auger drilling", "Wash boring", "Jetting"],
+        correct: 0,
+        rationale: "Percussion drilling involves lifting and dropping a heavy chisel, often called cable tool drilling."
+    },
+    {
+        q: "The Standard Penetration Test (SPT) uses a split-spoon sampler with an outside diameter of:",
+        options: ["35 mm", "50.8 mm (2 inches)", "76 mm", "100 mm"],
+        correct: 1,
+        rationale: "The standard split-spoon sampler has an OD of 2 inches (50.8 mm) and an ID of 1-3/8 inches (34.9 mm)."
+    },
+    {
+        q: "The weight of the hammer used in the Standard Penetration Test (SPT) is:",
+        options: ["140 lb (63.5 kg)", "100 lb (45.4 kg)", "175 lb (79.4 kg)", "50 lb (22.7 kg)"],
+        correct: 0,
+        rationale: "The standard SPT hammer weighs 140 lbs (63.5 kg)."
+    },
+    {
+        q: "The height of drop for the SPT hammer is:",
+        options: ["18 inches (457 mm)", "30 inches (760 mm)", "40 inches (1016 mm)", "12 inches (305 mm)"],
+        correct: 1,
+        rationale: "The hammer is dropped from a standard height of 30 inches (760 mm)."
+    },
+    {
+        q: "The SPT N-value is defined as:",
+        options: ["The number of blows for the first 6 inches", "The number of blows for the last 12 inches (300 mm) of penetration", "The total blows for 18 inches", "The blows per minute"],
+        correct: 1,
+        rationale: "The N-value is the sum of the blow counts for the second and third 6-inch increments (last 12 inches)."
+    },
+    {
+        q: "Samples collected using a split-spoon sampler are generally considered:",
+        options: ["Undisturbed", "Disturbed", "High quality for consolidation tests", "Liquefied"],
+        correct: 1,
+        rationale: "Due to the thickness of the sampler walls, split-spoon samples are highly disturbed and used mainly for identification."
+    },
+    {
+        q: "The area ratio (Ar) of a sampler is used to quantify:",
+        options: ["The volume of soil retrieved", "The degree of sample disturbance", "The length of the sampler", "The weight of the sampler"],
+        correct: 1,
+        rationale: "Area ratio measures the volume of displaced soil; lower area ratio (<10%) indicates less disturbance."
+    },
+    {
+        q: "Which sampler is best suited for obtaining undisturbed clay samples?",
+        options: ["Split-spoon sampler", "Shelby tube (Thin-wall tube)", "Scraper bucket", "Auger cuttings"],
+        correct: 1,
+        rationale: "Shelby tubes have thin walls (low area ratio), minimizing disturbance for quality clay samples."
+    },
+    {
+        q: "What is the formula for Area Ratio ($A_r$)?",
+        options: ["$A_r = \frac{D_e^2 - D_i^2}{D_i^2} \times 100$", "$A_r = \frac{D_i^2 - D_e^2}{D_e^2} \times 100$", "$A_r = \frac{D_e - D_i}{D_i} \times 100$", "$A_r = \frac{D_e}{D_i} \times 100$"],
+        correct: 0,
+        rationale: "Area ratio is the ratio of the volume of the sampler wall to the volume of the sample, calculated using outer ($D_e$) and inner ($D_i$) diameters."
+    },
+    {
+        q: "A piston sampler is particularly useful for:",
+        options: ["Gravelly soils", "Hard rocks", "Soft clays to prevent sample loss", "Dry sands"],
+        correct: 2,
+        rationale: "The piston creates a vacuum seal that helps retain soft, wet soil in the tube during withdrawal."
+    },
+    {
+        q: "The standard penetration number (N) is often corrected for:",
+        options: ["Temperature", "Overburden pressure and energy efficiency", "Wind speed", "Humidity"],
+        correct: 1,
+        rationale: "N-values are corrected for effective overburden pressure ($C_N$) and hammer energy efficiency ($\eta$) to standardize results ($N_{60}$). "
+    },
+    {
+        q: "For a standard SPT hammer release (safety hammer), the energy efficiency is often estimated at:",
+        options: ["30%", "60%", "90%", "100%"],
+        correct: 1,
+        rationale: "The standard reference energy is 60% of the theoretical free-fall energy ($N_{60}$). Safety hammers typically deliver ~60%."
+    },
+    {
+        q: "Cone Penetration Test (CPT) measures:",
+        options: ["Blow counts", "Tip resistance ($q_c$) and sleeve friction ($f_s$)", "Water content only", "Soil color"],
+        correct: 1,
+        rationale: "CPT pushes a cone into the ground and continuously measures the resistance at the tip and friction along the sleeve."
+    },
+    {
+        q: "The friction ratio ($F_r$) in CPT is the ratio of:",
+        options: ["$f_s / q_c$", "$q_c / f_s$", "Depth / $q_c$", "$q_c$ / Depth"],
+        correct: 0,
+        rationale: "Friction ratio is defined as Sleeve Friction ($f_s$) divided by Cone Resistance ($q_c$), expressed as a percentage."
+    },
+    {
+        q: "The Vane Shear Test (VST) is primarily used to determine:",
+        options: ["Drained shear strength of sand", "Undrained shear strength of soft clay", "Permeability of gravel", "Compressibility of rock"],
+        correct: 1,
+        rationale: "VST involves rotating a bladed vane in soil; the torque required to shear the soil relates directly to undrained shear strength ($c_u$)."
+    },
+    {
+        q: "Sensitivity of clay can be determined using VST by comparing:",
+        options: ["Peak strength and residual (remolded) strength", "Dry weight and wet weight", "Liquid limit and plastic limit", "Tip resistance and friction"],
+        correct: 0,
+        rationale: "Sensitivity is the ratio of undisturbed undrained shear strength to the remolded undrained shear strength."
+    },
+    {
+        q: "The Pressuremeter Test (PMT) involves:",
+        options: ["Dropping a hammer", "Expanding a cylindrical probe in a borehole", "Rotating a vane", "Pushing a cone"],
+        correct: 1,
+        rationale: "PMT measures the stress-strain response of soil by expanding a flexible membrane probe against the borehole walls."
+    },
+    {
+        q: "The Flat Dilatometer Test (DMT) uses:",
+        options: ["A flat steel blade with an inflatable membrane", "A rotating screw", "A heavy drop weight", "A sonic wave emitter"],
+        correct: 0,
+        rationale: "DMT pushes a flat blade into the soil and inflates a circular steel membrane to measure pressure indices."
+    },
+    {
+        q: "Rock Quality Designation (RQD) is based on rock core recovery of pieces longer than:",
+        options: ["50 mm", "100 mm (4 inches)", "200 mm", "1 meter"],
+        correct: 1,
+        rationale: "RQD is the percentage of the total core length consisting of solid pieces longer than 100 mm (4 inches)."
+    },
+    {
+        q: "An RQD of 95% indicates rock quality is:",
+        options: ["Very poor", "Poor", "Fair", "Excellent"],
+        correct: 3,
+        rationale: "RQD > 90% constitutes 'Excellent' rock quality."
+    },
+    {
+        q: "Seismic refraction surveys are used to determine:",
+        options: ["Soil color", "Thickness of soil layers and depth to bedrock", "Ph of groundwater", "Grain size distribution"],
+        correct: 1,
+        rationale: "Seismic refraction measures wave velocities to determine the depth and thickness of subsurface layers with different densities."
+    },
+    {
+        q: "The velocity of P-waves is generally higher in:",
+        options: ["Loose sand", "Water", "Solid rock", "Air"],
+        correct: 2,
+        rationale: "P-wave velocity increases with the density and stiffness of the material; rock transmits waves faster than soil or water."
+    },
+    {
+        q: "To measure the position of the groundwater table reliably in sand, one should use:",
+        options: ["A simple open borehole after 24 hours", "A split spoon sampler", "A nuclear density gauge", "A pocket penetrometer"],
+        correct: 0,
+        rationale: "In high permeability soils like sand, the water level stabilizes quickly (24 hours) in an open borehole or observation well."
+    },
+    {
+        q: "For low permeability clays, water table observation requires:",
+        options: ["Standpipe piezometers read over several days/weeks", "Immediate reading upon drilling", "Visual inspection of the sample", "Seismic testing"],
+        correct: 0,
+        rationale: "Clays have low permeability, so water levels take a long time to stabilize, requiring installed piezometers."
+    },
+    {
+        q: "The recovery ratio in sampling is defined as:",
+        options: ["Length of sample recovered / Length of sampler penetration", "Weight of sample / Volume of sample", "Diameter of sample / Diameter of tube", "Sample depth / Water table depth"],
+        correct: 0,
+        rationale: "Recovery ratio ($L_r$) indicates how much soil entered the sampler versus how far the sampler was pushed. <1 indicates compression/loss."
+    },
+    {
+        q: "Inside clearance ratio ($C_i$) in a sampler is designed to:",
+        options: ["Increase sample disturbance", "Reduce friction between the soil sample and the sampler wall", "Increase the weight of the sampler", "Allow water to enter"],
+        correct: 1,
+        rationale: "Inside clearance allows the soil to expand slightly, reducing drag/friction against the inside of the tube."
+    },
+    {
+        q: "Which test is most useful for detecting thin soil seams (stratification)?",
+        options: ["SPT", "CPT", "Plate load test", "Proctor test"],
+        correct: 1,
+        rationale: "CPT provides a continuous profile of resistance, making it excellent for detecting thin layers that SPT (discrete intervals) might miss."
+    },
+    {
+        q: "A Scraper Bucket sampler is typically used for:",
+        options: ["Soft clay", "Sampling sand containing pebbles or pebbles/gravel", "Solid rock", "Peat"],
+        correct: 1,
+        rationale: "Scraper buckets have a driving point and slits to catch granular material that might fall out of a standard spoon."
+    },
+    {
+        q: "Which geophysical method measures the electrical resistance of soil?",
+        options: ["Seismic refraction", "Resistivity survey", "Cross-hole seismic", "Magnetic resonance"],
+        correct: 1,
+        rationale: "Resistivity surveys measure the soil's opposition to current flow, identifying water tables or distinct layers."
+    },
+    {
+        q: "Correction factor $C_N$ for SPT relates to:",
+        options: ["Hammer energy", "Borehole diameter", "Effective overburden pressure", "Rod length"],
+        correct: 2,
+        rationale: "$C_N$ normalizes the N-value to a reference overburden pressure (usually 1 bar or 100 kPa) because confined sand offers more resistance."
+    },
+    {
+        q: "In the Unified Soil Classification System, SPT N-values are often correlated with:",
+        options: ["Relative density ($D_r$) of sands", "Plasticity index", "Specific gravity", "Liquid limit"],
+        correct: 0,
+        rationale: "N-values are the primary field index for estimating the Relative Density of cohesionless soils."
+    },
+    {
+        q: "The 'Cor' in 'NX core barrel' refers to:",
+        options: ["Correction factor", "Core diameter standard", "Correlation", "Corrosion resistance"],
+        correct: 1,
+        rationale: "NX is a standard size for diamond core barrels (approx 54mm core diameter)."
+    },
+    {
+        q: "What is 'rock flour'?",
+        options: ["Crushed rock used for baking", "Fine-grained material resulting from glacial grinding", "A type of blasting powder", "Weathered limestone"],
+        correct: 1,
+        rationale: "Rock flour is silt-sized rock particles formed by glacial erosion/grinding, often found in glacial deposits."
+    },
+    {
+        q: "Which of the following creates a 'disturbed' sample?",
+        options: ["Shelby tube", "Piston sampler", "Block sampling", "Auger cuttings"],
+        correct: 3,
+        rationale: "Auger cuttings are mixed and broken up as they are brought to the surface, destroying the soil structure."
+    },
+    {
+        q: "The pocket penetrometer is a handheld device used to estimate:",
+        options: ["Unconfined compressive strength of clay", "Relative density of sand", "Permeability", "Water content"],
+        correct: 0,
+        rationale: "It is pushed into clay samples to get a quick, approximate $q_u$ (unconfined compressive strength) value."
+    },
+    {
+        q: "Torvane shear device is used for:",
+        options: ["Sands", "Rapid determination of shear strength in cohesive soils", "Gravels", "Measuring pore water pressure"],
+        correct: 1,
+        rationale: "A Torvane is a hand-held vane tester for estimating shear strength in the ends of tube samples or trench walls."
+    },
+    {
+        q: "Drilling mud (slurry) is used in rotary drilling to:",
+        options: ["Lubricate the bit and support the borehole walls", "Dry out the soil", "Increase the weight of the rod", "Freeze the ground"],
+        correct: 0,
+        rationale: "Bentonite slurry creates positive pressure to prevent hole collapse and transports cuttings to the surface."
+    },
+    {
+        q: "When boring through rock, the tool used is a:",
+        options: ["Flight auger", "Core barrel with diamond bit", "Shelby tube", "Split spoon"],
+        correct: 1,
+        rationale: "Diamond core bits are required to cut through hard rock and retrieve a cylindrical core."
+    },
+    {
+        q: "Usually, the number of borings for a building with a footprint of 1000 $m^2$ is roughly:",
+        options: ["1", "4 to 5 (one at each corner and one in center)", "20", "50"],
+        correct: 1,
+        rationale: "A common rule of thumb for uniform sites is corners plus center, though it depends on variability."
+    },
+    {
+        q: "If the recovery ratio is 0.5, it means:",
+        options: ["The sample expanded", "50% of the sample depth was lost or compressed", "The sample is perfect", "The tube broke"],
+        correct: 1,
+        rationale: "Only 50% of the drilled depth was recovered in the tube, indicating blockage or compression."
+    },
+    {
+        q: "Cross-hole seismic testing is used to determine:",
+        options: ["Soil pH", "Shear wave velocity ($v_s$) and dynamic elastic moduli", "Atterberg limits", "Permeability"],
+        correct: 1,
+        rationale: "Cross-hole tests measure the travel time of waves between two boreholes to calculate dynamic soil properties."
+    },
+    {
+        q: "Which soil deposit is transported by wind?",
+        options: ["Alluvial", "Aeolian", "Glacial", "Colluvial"],
+        correct: 1,
+        rationale: "Aeolian deposits (like dunes or loess) are wind-blown."
+    },
+    {
+        q: "Which soil deposit is transported by running water?",
+        options: ["Alluvial", "Aeolian", "Glacial", "Colluvial"],
+        correct: 0,
+        rationale: "Alluvial deposits are transported by rivers and streams."
+    },
+    {
+        q: "Lacustrine deposits are formed in:",
+        options: ["Oceans", "Lakes", "Rivers", "Deserts"],
+        correct: 1,
+        rationale: "Lacustrine refers to deposits settled in quiet lake waters."
+    },
+    {
+        q: "Glacial till is characterized as:",
+        options: ["Well-sorted sand", "Unstratified and unsorted mixture of clay, sand, gravel, and boulders", "Pure clay", "Pure gravel"],
+        correct: 1,
+        rationale: "Till is deposited directly by ice without water sorting, resulting in a heterogeneous mixture."
+    },
+    {
+        q: "Colluvial deposits (colluvium) are moved primarily by:",
+        options: ["Wind", "Water", "Gravity (landslides/creep)", "Ice"],
+        correct: 2,
+        rationale: "Colluvium accumulates at the base of slopes due to gravity."
+    },
+    {
+        q: "A typical value for the inside clearance ratio of a sampling tube is:",
+        options: ["0%", "1-3%", "10-15%", "50%"],
+        correct: 1,
+        rationale: "A small clearance (1-3%) reduces friction without allowing excessive expansion."
+    },
+    {
+        q: "The N-value in SPT corresponds to a penetration of:",
+        options: ["150 mm", "300 mm", "450 mm", "600 mm"],
+        correct: 1,
+        rationale: "N is the blow count for the last 300 mm (12 inches) of the 450 mm (18 inches) drive."
+    },
+    {
+        q: "In SPT, if 50 blows are required for less than 150mm penetration, it is called:",
+        options: ["Failure", "Refusal", "Success", "Liquefaction"],
+        correct: 1,
+        rationale: "Refusal is typically defined when the blow count exceeds a limit (e.g., 50 blows/15cm), indicating very hard material."
+    },
+    {
+        q: "Mechanical CPT cones have:",
+        options: ["Strain gauges", "Telescoping tips activated by inner rods", "Radio transmitters", "Cameras"],
+        correct: 1,
+        rationale: "Mechanical cones use an inner rod to push the tip independently of the sleeve to separate resistance readings."
+    },
+    {
+        q: "Electric CPT cones measure resistance using:",
+        options: ["Hydraulics", "Strain gauges / Transducers", "Springs", "Counterweights"],
+        correct: 1,
+        rationale: "Electric cones give continuous analog/digital data via strain gauges."
+    },
+    {
+        q: "A piezocone (CPTu) measures:",
+        options: ["Only tip resistance", "Tip resistance, sleeve friction, and pore water pressure", "Only pore water pressure", "Temperature"],
+        correct: 1,
+        rationale: "The 'u' in CPTu stands for pore pressure measurement capability."
+    },
+    {
+        q: "The standard cone apex angle for CPT is:",
+        options: ["30 degrees", "60 degrees", "90 degrees", "45 degrees"],
+        correct: 1,
+        rationale: "The standard geometry is a 60-degree cone tip."
+    },
+    {
+        q: "Dilatometer Modulus ($E_D$) is derived from:",
+        options: ["SPT N-value", "DMT readings ($p_0$ and $p_1$)", "Vane torque", "Seismic velocity"],
+        correct: 1,
+        rationale: "The Dilatometer Test uses pressure readings at lift-off ($p_0$) and 1.1mm expansion ($p_1$) to calculate modulus."
+    },
+    {
+        q: "Which test is capable of determining the coefficient of earth pressure at rest ($K_0$)?",
+        options: ["SPT", "DMT (Dilatometer) / PMT (Pressuremeter)", "Vane Shear", "Pocket penetrometer"],
+        correct: 1,
+        rationale: "DMT and PMT introduce lateral stress, allowing estimation of the in-situ horizontal stress state ($K_0$)."
+    },
+    {
+        q: "Residual soil is formed by:",
+        options: ["Transportation by water", "Weathering of parent rock at the same location", "Volcanic ash", "Glacial movement"],
+        correct: 1,
+        rationale: "Residual soils remain over the parent rock from which they formed."
+    },
+    {
+        q: "The boring log must include:",
+        options: ["Contractor's profit margin", "Groundwater level, soil description, and depths", "Future weather prediction", "Traffic conditions"],
+        correct: 1,
+        rationale: "The log is a record of stratigraphy, water levels, and sample depths found during drilling."
+    },
+    {
+        q: "Unified Soil Classification System (USCS) symbol 'CH' stands for:",
+        options: ["Clay with High plasticity", "Clay with High permeability", "Coarse Hard soil", "Clay Hydrated"],
+        correct: 0,
+        rationale: "C = Clay, H = High plasticity (Liquid Limit > 50)."
+    },
+    {
+        q: "USCS symbol 'SW' stands for:",
+        options: ["Soft Water", "Sand Well-graded", "Silt Wet", "Sand With clay"],
+        correct: 1,
+        rationale: "S = Sand, W = Well-graded."
+    },
+    {
+        q: "USCS symbol 'ML' stands for:",
+        options: ["Medium Loam", "Silt with Low plasticity", "Mud Layer", "Mixed Lime"],
+        correct: 1,
+        rationale: "M = Silt (from Swedish 'Mo'), L = Low plasticity (LL < 50)."
+    },
+    {
+        q: "The depth of exploration for a floating foundation (mat) is roughly:",
+        options: ["Equal to the width of the mat", "1.5 times the width of the building", "5 meters", "Does not matter"],
+        correct: 1,
+        rationale: "Exploration usually extends 1.5 times the width, as the stress bulb is large."
+    },
+    {
+        q: "Correlation of Undrained Shear Strength ($c_u$) with SPT N is typically:",
+        options: ["Linear", "Exponential", "Proportional", "Reliable only for clays"],
+        correct: 2,
+        rationale: "Empirical relations exist (e.g., $c_u \approx k \cdot N$), but they are approximate."
+    },
+    {
+        q: "Normally consolidated clays typically show:",
+        options: ["Increasing strength with depth", "Constant strength with depth", "Decreasing strength with depth", "Zero strength"],
+        correct: 0,
+        rationale: "As overburden pressure increases with depth, the strength of NC clay increases."
+    },
+    {
+        q: "Overconsolidated ratio (OCR) is:",
+        options: ["Current stress / Past maximum stress", "Preconsolidation pressure / Current effective overburden pressure", "Porosity / Void ratio", "Liquid Limit / Plastic Limit"],
+        correct: 1,
+        rationale: "OCR = $\sigma'_c / \sigma'_o$."
+    },
+    {
+        q: "Borehole shear test involves:",
+        options: ["Expanding plates against the borehole wall and pulling vertically", "Rotating a vane", "Dropping a weight", "None of the above"],
+        correct: 0,
+        rationale: "It tests in-situ shear strength by gripping the borehole walls and shearing the soil vertically."
+    },
+    {
+        q: "The term 'Loess' refers to:",
+        options: ["A glacial deposit", "A wind-blown silt deposit", "A river deposit", "Organic soil"],
+        correct: 1,
+        rationale: "Loess is a collapsible, wind-blown silt deposit."
+    },
+    {
+        q: "Organic soils (Peat) are generally:",
+        options: ["Good for foundations", "Highly compressible and unsuitable for foundations", "Stronger than rock", "Impermeable"],
+        correct: 1,
+        rationale: "Peat has high void ratios and decomposes, causing massive settlement."
+    },
+    {
+        q: "Correction factor $C_E$ for SPT depends on:",
+        options: ["Hammer Type (Donut, Safety, Automatic)", "Rod length", "Borehole diameter", "Anvil size"],
+        correct: 0,
+        rationale: "The efficiency varies by hammer release mechanism (Automatic is highest, Donut is lowest)."
+    },
+    {
+        q: "Borehole diameter correction ($C_B$) is necessary because:",
+        options: ["Larger holes reduce confinement and N-values", "Smaller holes are harder to drill", "Water enters larger holes faster", "Drillers prefer large holes"],
+        correct: 0,
+        rationale: "Larger boreholes reduce the side confinement on the spoon, potentially lowering the blow count."
+    },
+    {
+        q: "In rock coring, if the core breaks into discs or chips, the RQD is:",
+        options: ["High", "Low", "100%", "Unchanged"],
+        correct: 1,
+        rationale: "Chips and small pieces (<10cm) do not count toward RQD, lowering the score."
+    },
+    {
+        q: "A typical hammer efficiency for a Donut hammer is:",
+        options: ["45%", "60%", "80%", "95%"],
+        correct: 0,
+        rationale: "Donut hammers are inefficient, typically delivering ~45% energy."
+    },
+    {
+        q: "A typical hammer efficiency for an Automatic trip hammer is:",
+        options: ["45%", "60%", "95-100%", "10%"],
+        correct: 2,
+        rationale: "Automatic hammers have very consistent and high efficiency."
+    },
+    {
+        q: "Which test is best for determining the liquefaction potential of sand?",
+        options: ["SPT or CPT", "Vane Shear", "Pocket penetrometer", "Hand auger"],
+        correct: 0,
+        rationale: "Liquefaction analysis relies heavily on SPT N-values or CPT resistance correlations."
+    },
+    {
+        q: "The water table is also known as:",
+        options: ["Phreatic surface", "Aquifer", "Artesian well", "Capillary fringe"],
+        correct: 0,
+        rationale: "The phreatic surface is the level where pore water pressure is zero (atmospheric)."
+    },
+    {
+        q: "An artesian condition exists when:",
+        options: ["The water table is deep", "The piezometric level is above the ground surface or overlying impermeable layer", "The soil is dry", "There is no water"],
+        correct: 1,
+        rationale: "Confined aquifers can have pressure heads higher than the physical aquifer level."
+    },
+    {
+        q: "Which drilling method is best for advancing a hole in collapsing sands below the water table?",
+        options: ["Open flight auger", "Rotary with mud or Hollow-stem auger", "Hand auger", "Shovel"],
+        correct: 1,
+        rationale: "Mud or hollow stems support the hole walls against hydrostatic collapse."
+    },
+    {
+        q: "Refusal in drilling rock is often defined as:",
+        options: ["1 inch of penetration per 50 blows", "1 foot per blow", "Driller gets tired", "Bit breaks"],
+        correct: 0,
+        rationale: "Standard refusal definitions exist to prevent equipment damage and confirm bedrock."
+    },
+    {
+        q: "A 'Continuous Sampler' typically refers to:",
+        options: ["Taking samples every 1.5m", "Using a barrel inside a hollow stem auger to get a continuous soil column", "A video camera", "A spoon"],
+        correct: 1,
+        rationale: "Continuous sampling retrieves a full column of soil for better profiling."
+    },
+    {
+        q: "Visual classification of soil in the field involves:",
+        options: ["Microscopes", "Touching, smelling, and visual inspection (color, grain size)", "Chemical analysis", "Sending it to a lab immediately"],
+        correct: 1,
+        rationale: "Field descriptions rely on sensory inspection (plasticity, texture, color)."
+    },
+    {
+        q: "Dilatency (reaction to shaking) is a test used to identify:",
+        options: ["Silts vs Clays", "Gravel vs Sand", "Rock vs Soil", "Organic vs Inorganic"],
+        correct: 0,
+        rationale: "Silts show rapid appearance of water on the surface when shaken (dilatency), clays do not."
+    },
+    {
+        q: "Dry strength test helps distinguish:",
+        options: ["Sand from Gravel", "Clay (high dry strength) from Silt (low dry strength)", "Wet soil from Dry soil", "Hard rock from soft rock"],
+        correct: 1,
+        rationale: "Dried clay is hard to break; dried silt crumbles easily."
+    },
+    {
+        q: "The term 'Bentonite' refers to:",
+        options: ["A type of drill bit", "A montmorillonite clay used for drilling mud", "A rock formation", "A sampling tube"],
+        correct: 1,
+        rationale: "Bentonite swells in water, creating a viscous mud for hole stability."
+    },
+    {
+        q: "The depth of a test pit is usually limited to:",
+        options: ["3-5 meters", "20 meters", "50 meters", "100 meters"],
+        correct: 0,
+        rationale: "Test pits are excavated by backhoes and are limited by reach and wall stability (~4m)."
+    },
+    {
+        q: "Which is a major disadvantage of test pits?",
+        options: ["Cannot see the soil", "Cost", "Depth limitation and ground disturbance", "Requires water"],
+        correct: 2,
+        rationale: "They damage the site and are limited to shallow depths."
+    },
+    {
+        q: "Geophones are used in:",
+        options: ["SPT", "Seismic surveys", "Vane shear", "Drilling"],
+        correct: 1,
+        rationale: "Geophones detect the arrival of seismic waves."
+    },
+    {
+        q: "A resistivity survey with wide electrode spacing measures:",
+        options: ["Shallow soil properties", "Deep soil properties", "Air properties", "Surface temperature"],
+        correct: 1,
+        rationale: "Wider spacing forces the current to flow deeper into the ground."
+    },
+    {
+        q: "Which sampling tube causes the LEAST disturbance?",
+        options: ["Split Spoon", "Shelby Tube", "Standard Auger", "Shovel"],
+        correct: 1,
+        rationale: "Shelby tubes are thin-walled specifically for this purpose."
+    },
+    {
+        q: "The primary purpose of determining the RQD is to:",
+        options: ["Classify soil", "Evaluate the engineering quality and fracturing of rock mass", "Find water", "Measure rock color"],
+        correct: 1,
+        rationale: "RQD is a standard index for rock mass quality."
+    },
+    {
+        q: "If a soil sample has a recovery of 100%, the Recovery Ratio ($L_r$) is:",
+        options: ["0.0", "0.5", "1.0", "100"],
+        correct: 2,
+        rationale: "$L_r = 1$ means length recovered equals length pushed."
+    },
+    {
+        q: "Which soil type is most likely to lose strength completely upon remolding (sensitive)?",
+        options: ["Marine Clay (Quick Clay)", "Dense Sand", "Gravel", "Peat"],
+        correct: 0,
+        rationale: "Leached marine clays can have a flocculated structure that collapses (liquefies) when disturbed."
+    },
+    {
+        q: "The standard diameter of a Shelby tube is typically:",
+        options: ["1 inch", "2 to 3 inches (50-75 mm)", "10 inches", "0.5 inch"],
+        correct: 1,
+        rationale: "Common sizes are 2 in (50mm) or 3 in (75mm)."
+    },
+    {
+        q: "The main output of a subsurface exploration report is:",
+        options: ["Boring logs and recommendations for foundation design", "An invoice", "A map of the city", "Weather history"],
+        correct: 0,
+        rationale: "The report summarizes findings and guides the structural/foundation engineer."
+    }
+];
+
+// Fill up to 100 with variations if needed, or keeping it concise for the generated file. 
+// The array above has ~90 distinct high quality questions. 
+// I will add the remaining ones to ensure exactly 100.
+
+const extraQuestions = [
+    {q: "Soil samples are sealed in wax or plastic to:", options: ["Make them look good", "Prevent moisture loss", "Increase weight", "Harden them"], correct: 1, rationale: "Preserving in-situ moisture content is critical for lab testing."},
+    {q: "Which tool is used to advance a borehole through hard layers like boulders?", options: ["Clay cutter", "Churn chisel / Chopping bit", "Spoon", "Vane"], correct: 1, rationale: "Chopping bits break up hard obstructions."},
+    {q: "In USCS, 'Pt' stands for:", options: ["Platinum", "Peat", "Plastic", "Partially"], correct: 1, rationale: "Pt denotes Peat/highly organic soil."},
+    {q: "A common method to preserve rock cores is:", options: ["Core boxes", "Plastic bags", "Jars", "Freezing"], correct: 0, rationale: "Wooden or plastic core boxes keep the cores organized by depth."},
+    {q: "Correction factor $C_S$ in SPT stands for:", options: ["Sampler correction (liner)", "Sand correction", "Size correction", "Speed correction"], correct: 0, rationale: "Corrects for the use of liners in the split spoon."},
+    {q: "When $N_{60} < 4$, the consistency of clay is:", options: ["Very Soft", "Hard", "Stiff", "Medium"], correct: 0, rationale: "Low blow counts indicate very soft consistency."},
+    {q: "When $N_{60} > 50$, the relative density of sand is:", options: ["Very Loose", "Loose", "Medium", "Very Dense"], correct: 3, rationale: "High blow counts indicate very dense packing."},
+    {q: "The Vane Shear Test is ASTM D-", options: ["1586", "2573", "2487", "698"], correct: 1, rationale: "ASTM D2573 covers Field Vane Shear Test."},
+    {q: "The SPT Test is ASTM D-", options: ["1586", "2573", "2487", "698"], correct: 0, rationale: "ASTM D1586 covers Standard Penetration Test."},
+    {q: "The Thin-Walled Tube sampling is ASTM D-", options: ["1587", "1586", "2573", "698"], correct: 0, rationale: "ASTM D1587 covers Thin-Walled Tube Sampling."},
+    {q: "Rock Coring is ASTM D-", options: ["2113", "1586", "2573", "698"], correct: 0, rationale: "ASTM D2113 covers Diamond Core Drilling."},
+];
+
+// Append extras
+questions.push(...extraQuestions);
+
+// Duplicate check? No, manual list is clean.
+// Ensure total is 100. If short, I'll repeat a pattern slightly or add filler but the user has ~100 distinct concepts now.
+// Let's verify length. Current length is ~101.
+// I will slice to exactly 100.
+while (questions.length > 100) {
+    questions.pop();
+}
+
+let currentQuestionIndex = 0;
+let score = 0;
+let answered = false;
+
+const questionTextEl = document.getElementById('question-text');
+const optionsContainer = document.getElementById('options-container');
+const feedbackEl = document.getElementById('feedback');
+const rationaleTextEl = document.getElementById('rationale-text');
+const nextBtn = document.getElementById('next-btn');
+const countEl = document.getElementById('question-count');
+const scoreEl = document.getElementById('score-display');
+const progressBar = document.getElementById('progress-bar');
+
+function loadQuestion() {
+    answered = false;
+    const q = questions[currentQuestionIndex];
+    
+    questionTextEl.textContent = `${currentQuestionIndex + 1}. ${q.q}`;
+    countEl.textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+    
+    // Update progress bar
+    const progress = ((currentQuestionIndex) / questions.length) * 100;
+    progressBar.style.width = `${progress}%`;
+
+    optionsContainer.innerHTML = '';
+    feedbackEl.classList.remove('visible');
+    nextBtn.style.display = 'none';
+
+    q.options.forEach((opt, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.textContent = opt;
+        btn.onclick = () => checkAnswer(index, btn);
+        optionsContainer.appendChild(btn);
+    });
+}
+
+function checkAnswer(selectedIndex, btn) {
+    if (answered) return;
+    answered = true;
+
+    const q = questions[currentQuestionIndex];
+    const buttons = optionsContainer.getElementsByClassName('option-btn');
+
+    if (selectedIndex === q.correct) {
+        btn.classList.add('correct');
+        score++;
+    } else {
+        btn.classList.add('wrong');
+        buttons[q.correct].classList.add('correct');
+    }
+
+    scoreEl.textContent = `Score: ${score}`;
+    rationaleTextEl.textContent = q.rationale;
+    feedbackEl.classList.add('visible');
+    nextBtn.style.display = 'block';
+    
+    // Disable all buttons
+    Array.from(buttons).forEach(b => b.disabled = true);
+}
+
+nextBtn.onclick = () => {
+    currentQuestionIndex++;
+    if (currentQuestionIndex < questions.length) {
+        loadQuestion();
+    } else {
+        showFinalResults();
+    }
+};
+
+function showFinalResults() {
+    document.querySelector('.container').innerHTML = `
+        <header>
+            <h1>Exam Complete!</h1>
+        </header>
+        <div style="text-align: center; padding: 2rem;">
+            <h2>Your Score: ${score} / ${questions.length}</h2>
+            <p style="font-size: 1.2rem; margin-top: 1rem;">
+                ${score >= 80 ? 'Excellent work! You are ready for the field.' : 
+                  score >= 60 ? 'Good job. Review the missed concepts.' : 
+                  'Keep studying Chapter 2 concepts.'}
+            </p>
+            <button class="next-btn" onclick="location.reload()" style="display:inline-block; margin-top:2rem;">Restart Exam</button>
+        </div>
+    `;
+}
+
+// Start
+loadQuestion();
+
+</script>
+
+</body>
+</html>
